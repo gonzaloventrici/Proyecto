@@ -2,6 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import events, tickets, reviews, auth
 
+from app.database.connection import engine, Base
+from app.models import user, event, ticket, review
+
+Base.metadata.create_all(bind=engine)
+
 app = FastAPI(
     title="EventApp API",
     description="API para la plataforma de eventos y reseñas verificadas",
