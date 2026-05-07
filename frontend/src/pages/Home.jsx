@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
 
@@ -7,12 +7,11 @@ export default function Home() {
   const [events, setEvents] = useState([])
   const [showConfirm, setShowConfirm] = useState(false)
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     api.get('/events/').then(res => setEvents(res.data))
   }, [])
-
-  console.log('showConfirm:', showConfirm)
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -29,7 +28,7 @@ export default function Home() {
                 Cancelar
               </button>
               <button
-                onClick={() => { logout(); setShowConfirm(false) }}
+                onClick={() => { setShowConfirm(false); logout(); }}
                 style={{flex:1, padding:'12px', borderRadius:'8px', background:'#dc2626', color:'white', fontWeight:'600', cursor:'pointer', border:'none'}}>
                 Cerrar sesión
               </button>
@@ -40,14 +39,18 @@ export default function Home() {
 
       <nav className="bg-gray-900 px-6 py-4 flex justify-between items-center">
         <h1 className="text-xl font-bold text-purple-400">EventApp</h1>
-        <div className="flex gap-4">
+        <div className="flex gap-4 items-center">
+          {user?.isOrganizer && (
+            <Link to="/events/create" className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition text-sm font-semibold">
+              + Crear evento
+            </Link>
+          )}
           {user ? (
             <button
-              onClick={(e) => { 
+              onClick={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                console.log('click cerrar sesion')
-                setShowConfirm(true) 
+                setShowConfirm(true)
               }}
               className="text-gray-400 hover:text-white transition">
               Cerrar sesión

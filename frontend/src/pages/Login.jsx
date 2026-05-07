@@ -15,7 +15,7 @@ export default function Login() {
     const res = await api.post('/auth/login', form)
     console.log('respuesta login:', res.data)
     login(res.data.access_token)
-    navigate('/')
+    navigate('/events')
   } catch (err) {
     console.log('error login:', err)
     setError('Email o contraseña incorrectos')

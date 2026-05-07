@@ -2,21 +2,30 @@ import { createContext, useContext, useState } from 'react'
 
 const AuthContext = createContext()
 
+function parseToken(token) {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return { token, isOrganizer: payload.is_organizer, userId: payload.sub }
+  } catch {
+    return null
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem('token')
-    return token ? { token } : null
+    return token ? parseToken(token) : null
   })
 
   const login = (token) => {
-  localStorage.setItem('token', token)
-  setUser({ token })
-  console.log('token guardado:', localStorage.getItem('token'))
-}
+    localStorage.setItem('token', token)
+    setUser(parseToken(token))
+  }
 
   const logout = () => {
     localStorage.removeItem('token')
     setUser(null)
+    window.location.href = '/login'
   }
 
   return (

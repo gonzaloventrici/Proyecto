@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import events, tickets, reviews, auth
-
 from app.database.connection import engine, Base
 from app.models import user, event, ticket, review
+from app.routers import events, tickets, reviews, auth
 
 Base.metadata.create_all(bind=engine)
 
