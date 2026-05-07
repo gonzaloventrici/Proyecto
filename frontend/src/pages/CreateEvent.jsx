@@ -37,7 +37,7 @@ export default function CreateEvent() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <nav className="bg-gray-900 px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-purple-400">EventApp</h1>
+        <h1 className="text-xl font-bold text-purple-400">WHARTY</h1>
         <button onClick={() => navigate('/events')} className="text-gray-400 hover:text-white transition">
           ← Volver
         </button>

@@ -38,7 +38,7 @@ export default function Home() {
       )}
 
       <nav className="bg-gray-900 px-6 py-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold text-purple-400">EventApp</h1>
+        <h1 className="text-xl font-bold text-purple-400">WHARTY</h1>
         <div className="flex gap-4 items-center">
           {user?.isOrganizer && (
             <Link to="/events/create" className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition text-sm font-semibold">

@@ -7,7 +7,7 @@ from app.routers import events, tickets, reviews, auth
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="EventApp API",
+    title="WHARTY API",
     description="API para la plataforma de eventos y reseñas verificadas",
     version="1.0.0"
 )
