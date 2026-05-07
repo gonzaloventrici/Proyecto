@@ -42,13 +42,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 @router.post("/login", response_model=Token)
-# Cambiamos LoginRequest por OAuth2PasswordRequestForm
-def login(data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    # OJO: OAuth2PasswordRequestForm usa .username, no .email
-    user = db.query(User).filter(User.email == data.username).first() 
-
+def login(data: LoginRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == data.email).first()
     if not user or not verify_password(data.password, user.password):
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
-
     token = create_token({"sub": str(user.id), "is_organizer": user.is_organizer})
     return {"access_token": token, "token_type": "bearer"}
