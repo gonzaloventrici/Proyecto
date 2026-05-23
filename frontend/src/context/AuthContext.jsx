@@ -13,20 +13,32 @@ function parseToken(token) {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const token = localStorage.getItem('token')
-    return token ? parseToken(token) : null
-  })
+  const token = localStorage.getItem('token')
+  const userData = localStorage.getItem('user_data')
+  if (token && userData) return JSON.parse(userData)
+  return token ? parseToken(token) : null
+})
 
-  const login = (token) => {
-    localStorage.setItem('token', token)
-    setUser(parseToken(token))
-  }
+  const login = async (token) => {
+  localStorage.setItem('token', token)
+  const payload = parseToken(token)
+  setUser(payload)
+  try {
+    const res = await fetch('http://127.0.0.1:8000/auth/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    setUser({ ...payload, avatar_url: data.avatar_url })
+    localStorage.setItem('user_data', JSON.stringify({ ...payload, avatar_url: data.avatar_url }))
+  } catch {}
+}
 
   const logout = () => {
-    localStorage.removeItem('token')
-    setUser(null)
-    window.location.href = '/login'
-  }
+  localStorage.removeItem('token')
+  localStorage.removeItem('user_data')
+  setUser(null)
+  window.location.href = '/login'
+}
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>

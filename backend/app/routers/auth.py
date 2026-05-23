@@ -10,6 +10,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 import os
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 
 router = APIRouter()
 
@@ -77,3 +78,19 @@ def update_me(data: dict, current_user: User = Depends(get_current_user), db: Se
     db.commit()
     db.refresh(current_user)
     return current_user
+
+@router.post("/me/avatar")
+def upload_avatar(file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    import shutil, uuid
+    from pathlib import Path
+    UPLOAD_DIR = Path("uploads")
+    UPLOAD_DIR.mkdir(exist_ok=True)
+    ext = file.filename.split('.')[-1]
+    filename = f"avatar_{uuid.uuid4()}.{ext}"
+    filepath = UPLOAD_DIR / filename
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    current_user.avatar_url = f"/uploads/{filename}"
+    db.commit()
+    db.refresh(current_user)
+    return {"avatar_url": current_user.avatar_url}

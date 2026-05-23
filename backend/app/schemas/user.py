@@ -56,6 +56,7 @@ class UserResponse(BaseModel):
     phone: Optional[str] = None
     cbu: Optional[str] = None
     created_at: datetime
+    avatar_url: Optional[str] = None
 
     class Config:
         from_attributes = True

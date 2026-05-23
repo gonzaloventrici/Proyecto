@@ -52,6 +52,10 @@ def create_review(review: ReviewCreate, db: Session = Depends(get_db), current_u
 
     return new_review
 
+@router.get("/me", response_model=list[ReviewResponse])
+def get_my_reviews(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return db.query(Review).filter(Review.user_id == current_user.id).all()
+
 @router.get("/{event_id}", response_model=list[ReviewResponse])
 def get_reviews(event_id: int, db: Session = Depends(get_db)):
     event = db.query(Event).filter(Event.id == event_id).first()

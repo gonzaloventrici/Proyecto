@@ -10,6 +10,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
     is_organizer = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.now())
+    avatar_url = Column(String(500), nullable=True)
 
     # Fiestero
     name = Column(String(100), nullable=True)
