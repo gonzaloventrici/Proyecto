@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
-from sqlalchemy.orm import relationship
 from app.database.connection import Base
 
 class EventImage(Base):
@@ -9,5 +8,3 @@ class EventImage(Base):
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
     url = Column(String(500), nullable=False)
     is_primary = Column(Boolean, default=False)
-
-    event = relationship("Event", backref="images")

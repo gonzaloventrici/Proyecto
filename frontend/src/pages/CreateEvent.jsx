@@ -1,81 +1,69 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import SideMenu from '../components/SideMenu'
 import api from '../services/api'
 
-export default function EditEvent() {
-  const { id } = useParams()
+export default function CreateEvent() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [form, setForm] = useState({
     title: '', description: '', location: '',
-    date: '', price: '', capacity: '', image_url: '', is_recurring: false
+    date: '', price: '', capacity: '', is_recurring: false
   })
-  const [imageFile, setImageFile] = useState(null)
-  const [preview, setPreview] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
+  const [imageFiles, setImageFiles] = useState([])
+  const [previews, setPreviews] = useState([])
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [done, setDone] = useState(false)
 
-  useEffect(() => {
-    api.get(`/events/${id}`).then(res => {
-      const e = res.data
-      setForm({
-        title: e.title,
-        description: e.description || '',
-        location: e.location,
-        date: e.date.slice(0, 16),
-        price: e.price,
-        capacity: e.capacity,
-        image_url: e.image_url || '',
-        is_recurring: e.is_recurring || false
-      })
-      if (e.image_url) setPreview(e.image_url.startsWith('http') ? e.image_url : `http://127.0.0.1:8000${e.image_url}`)
-      setLoading(false)
-    })
-  }, [id])
-
-  const handleImageFile = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setImageFile(file)
-      setPreview(URL.createObjectURL(file))
-    }
+  const handleImages = (e) => {
+    const files = Array.from(e.target.files)
+    setImageFiles(files)
+    setPreviews(files.map(f => URL.createObjectURL(f)))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSaving(true)
+    setLoading(true)
     setError('')
-    setSuccess('')
     try {
-      await api.put(`/events/${id}`, {
+      const res = await api.post('/events/', {
         ...form,
         price: parseFloat(form.price),
         capacity: parseInt(form.capacity),
         date: new Date(form.date).toISOString()
       })
 
-      if (imageFile) {
+      const eventId = res.data.id
+
+      for (const file of imageFiles) {
         const formData = new FormData()
-        formData.append('file', imageFile)
-        await api.post(`/events/${id}/upload-image`, formData, {
+        formData.append('file', file)
+        await api.post(`/events/${eventId}/images`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
       }
 
-      setSuccess('Evento actualizado correctamente')
+      setDone(true)
+      setTimeout(() => navigate('/my-events'), 2000)
     } catch {
-      setError('Error al actualizar el evento')
+      setError('Error al crear el evento. Verificá que todos los campos estén completos.')
     } finally {
-      setSaving(false)
+      setLoading(false)
     }
   }
 
-  if (loading) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">Cargando...</div>
+  if (done) return (
+    <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-5xl mb-4">✅</div>
+        <h2 className="text-2xl font-bold mb-2">Evento creado correctamente</h2>
+        <p className="text-gray-400">Redirigiendo a tus eventos...</p>
+      </div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -96,40 +84,10 @@ export default function EditEvent() {
       </nav>
 
       <div className="max-w-2xl mx-auto px-6 py-10">
-        <h2 className="text-3xl font-bold mb-8">Editar evento</h2>
-        {success && <p className="text-green-400 mb-4">{success}</p>}
+        <h2 className="text-3xl font-bold mb-8">Crear nuevo evento</h2>
         {error && <p className="text-red-400 mb-4">{error}</p>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
-          {/* Imagen */}
-          <div className="bg-gray-900 rounded-2xl p-6">
-            <p className="text-gray-400 text-sm mb-4 font-semibold">Imagen del evento</p>
-            {preview && (
-              <div className="mb-4 rounded-xl overflow-hidden h-48">
-                <img src={preview} alt="preview" className="w-full h-full object-cover" />
-              </div>
-            )}
-            <div className="flex flex-col gap-3">
-              <div>
-                <label className="text-gray-400 text-sm mb-1 block">Subir imagen desde tu computadora</label>
-                <input type="file" accept="image/*" onChange={handleImageFile}
-                  className="text-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-600 file:text-white file:cursor-pointer" />
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-px bg-gray-700"></div>
-                <span className="text-gray-500 text-xs">o</span>
-                <div className="flex-1 h-px bg-gray-700"></div>
-              </div>
-              <div>
-                <label className="text-gray-400 text-sm mb-1 block">Pegar URL de imagen</label>
-                <input type="text" placeholder="https://..."
-                  className="bg-gray-800 text-white rounded-lg px-4 py-3 outline-none w-full text-sm"
-                  value={form.image_url}
-                  onChange={e => { setForm({...form, image_url: e.target.value}); setPreview(e.target.value) }} />
-              </div>
-            </div>
-          </div>
 
           <input type="text" placeholder="Nombre del evento" required
             className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none"
@@ -156,21 +114,40 @@ export default function EditEvent() {
           </div>
 
           <label className="flex items-center gap-3 bg-gray-900 rounded-lg px-4 py-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={form.is_recurring}
+            <input type="checkbox" checked={form.is_recurring}
               onChange={e => setForm({...form, is_recurring: e.target.checked})}
-              className="w-4 h-4 accent-purple-600"
-            />
+              className="w-4 h-4 accent-purple-600" />
             <div>
               <div className="text-white text-sm font-semibold">Evento recurrente</div>
               <div className="text-gray-500 text-xs">Este evento se repite ocasionalmente</div>
             </div>
           </label>
 
-          <button type="submit" disabled={saving}
+          {/* Imágenes */}
+          <div className="bg-gray-900 rounded-2xl p-6">
+            <p className="text-white font-semibold mb-1">Imágenes del evento</p>
+            <p className="text-gray-500 text-xs mb-4">La primera imagen será la principal. Podés seleccionar varias a la vez.</p>
+
+            {previews.length > 0 && (
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                {previews.map((src, i) => (
+                  <div key={i} className="relative rounded-xl overflow-hidden">
+                    <img src={src} alt="preview" className="w-full h-24 object-cover" />
+                    {i === 0 && (
+                      <span className="absolute top-1 left-1 bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full">Principal</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <input type="file" accept="image/*" multiple onChange={handleImages}
+              className="text-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-600 file:text-white file:cursor-pointer" />
+          </div>
+
+          <button type="submit" disabled={loading}
             className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg transition disabled:opacity-50 mt-2">
-            {saving ? 'Guardando...' : 'Guardar cambios'}
+            {loading ? 'Creando...' : 'Crear evento'}
           </button>
         </form>
       </div>

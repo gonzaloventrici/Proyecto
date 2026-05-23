@@ -21,5 +21,6 @@ class Event(Base):
     is_recurring = Column(Boolean, default=False)
 
     organizer = relationship("User", backref="events")
-    tickets = relationship("Ticket", backref="event")
-    reviews = relationship("Review", backref="event")
+    tickets = relationship("Ticket", backref="event", cascade="all, delete-orphan")
+    reviews = relationship("Review", backref="event", cascade="all, delete-orphan")
+    images = relationship("EventImage", cascade="all, delete-orphan")
