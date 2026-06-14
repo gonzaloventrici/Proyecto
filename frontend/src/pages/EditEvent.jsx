@@ -4,6 +4,39 @@ import { useAuth } from '../context/AuthContext'
 import SideMenu from '../components/SideMenu'
 import api from '../services/api'
 
+const LOCATIONS = {
+  'Buenos Aires (CABA)': {
+    type: 'barrios',
+    items: ['Almagro','Balvanera','Barracas','Belgrano','Boedo','Caballito','Chacarita','Coghlan','Colegiales','Constitución','Flores','Floresta','La Boca','La Paternal','Liniers','Mataderos','Monte Castro','Montserrat','Nueva Pompeya','Núñez','Palermo','Parque Avellaneda','Parque Chacabuco','Parque Chas','Parque Patricios','Puerto Madero','Recoleta','Retiro','Saavedra','San Cristóbal','San Nicolás','San Telmo','Vélez Sársfield','Versalles','Villa Crespo','Villa del Parque','Villa Devoto','Villa General Mitre','Villa Lugano','Villa Luro','Villa Ortúzar','Villa Pueyrredón','Villa Real','Villa Riachuelo','Villa Santa Rita','Villa Soldati','Villa Urquiza']
+  },
+  'Buenos Aires (Provincia)': {
+    type: 'ciudades',
+    items: ['La Plata','Mar del Plata','Bahía Blanca','Quilmes','Lanús','General San Martín','Lomas de Zamora','Almirante Brown','Berazategui','Florencio Varela','Morón','Tigre','San Isidro','Vicente López','Tres de Febrero','Hurlingham','Ituzaingó','Malvinas Argentinas','José C. Paz','San Miguel','Moreno','Merlo','La Matanza','Ezeiza','Esteban Echeverría','Avellaneda','Zárate','Campana','Pilar','Escobar','Tandil','Necochea','Olavarría','Junín']
+  },
+  'Catamarca': { type: 'ciudades', items: ['San Fernando del Valle de Catamarca','Andalgalá','Belén','Santa María','Tinogasta'] },
+  'Chaco': { type: 'ciudades', items: ['Resistencia','Presidencia Roque Sáenz Peña','Villa Ángela','Charata','General San Martín'] },
+  'Chubut': { type: 'ciudades', items: ['Rawson','Comodoro Rivadavia','Trelew','Puerto Madryn','Esquel'] },
+  'Córdoba': { type: 'ciudades', items: ['Córdoba Capital','Villa Carlos Paz','Río Cuarto','San Francisco','Villa María','Alta Gracia','Jesús María','Bell Ville','Marcos Juárez','Río Tercero'] },
+  'Corrientes': { type: 'ciudades', items: ['Corrientes Capital','Goya','Mercedes','Curuzú Cuatiá','Paso de los Libres'] },
+  'Entre Ríos': { type: 'ciudades', items: ['Paraná','Concordia','Gualeguaychú','Concepción del Uruguay','Colón'] },
+  'Formosa': { type: 'ciudades', items: ['Formosa Capital','Clorinda','Pirané','El Colorado'] },
+  'Jujuy': { type: 'ciudades', items: ['San Salvador de Jujuy','Palpalá','San Pedro','Libertador General San Martín','Humahuaca'] },
+  'La Pampa': { type: 'ciudades', items: ['Santa Rosa','General Pico','Toay','Realicó','General Acha'] },
+  'La Rioja': { type: 'ciudades', items: ['La Rioja Capital','Chilecito','Aimogasta','Chamical'] },
+  'Mendoza': { type: 'ciudades', items: ['Mendoza Capital','San Rafael','Godoy Cruz','Luján de Cuyo','Maipú','Las Heras','Guaymallén','Rivadavia','San Martín'] },
+  'Misiones': { type: 'ciudades', items: ['Posadas','Oberá','Eldorado','Puerto Iguazú','Apóstoles'] },
+  'Neuquén': { type: 'ciudades', items: ['Neuquén Capital','San Martín de los Andes','Zapala','Cutral Có','Plottier'] },
+  'Río Negro': { type: 'ciudades', items: ['Viedma','Bariloche','General Roca','Cipolletti','El Bolsón'] },
+  'Salta': { type: 'ciudades', items: ['Salta Capital','Orán','Tartagal','San Ramón de la Nueva Orán','Metán'] },
+  'San Juan': { type: 'ciudades', items: ['San Juan Capital','Rivadavia','Chimbas','Santa Lucía','Pocito'] },
+  'San Luis': { type: 'ciudades', items: ['San Luis Capital','Villa Mercedes','Merlo','Justo Daract','Quines'] },
+  'Santa Cruz': { type: 'ciudades', items: ['Río Gallegos','Caleta Olivia','Pico Truncado','El Calafate'] },
+  'Santa Fe': { type: 'ciudades', items: ['Santa Fe Capital','Rosario','Rafaela','Venado Tuerto','Santo Tomé','Reconquista','Villa Constitución','Casilda'] },
+  'Santiago del Estero': { type: 'ciudades', items: ['Santiago del Estero Capital','La Banda','Termas de Río Hondo','Añatuya','Frías'] },
+  'Tierra del Fuego': { type: 'ciudades', items: ['Ushuaia','Río Grande','Tolhuin'] },
+  'Tucumán': { type: 'ciudades', items: ['San Miguel de Tucumán','Tafí Viejo','Banda del Río Salí','Yerba Buena','Concepción'] }
+}
+
 export default function EditEvent() {
   const { id } = useParams()
   const { user } = useAuth()
@@ -13,6 +46,8 @@ export default function EditEvent() {
     title: '', description: '', location: '',
     date: '', price: '', capacity: '', is_recurring: false
   })
+  const [provincia, setProvincia] = useState('')
+  const [localidad, setLocalidad] = useState('')
   const [images, setImages] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -32,6 +67,16 @@ export default function EditEvent() {
         capacity: e.capacity,
         is_recurring: e.is_recurring || false
       })
+
+      const locationParts = e.location.split(', ')
+      if (locationParts.length === 2) {
+        const [loc, prov] = locationParts
+        if (LOCATIONS[prov]) {
+          setProvincia(prov)
+          setLocalidad(loc)
+        }
+      }
+
       setLoading(false)
     })
     api.get(`/events/${id}/images`).then(res => setImages(res.data))
@@ -162,9 +207,37 @@ export default function EditEvent() {
           <textarea placeholder="Descripción"
             className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none resize-none h-28"
             value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
-          <input type="text" placeholder="Ubicación" required
-            className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none"
-            value={form.location} onChange={e => setForm({...form, location: e.target.value})} />
+
+          {/* Ubicación */}
+          <div className="flex flex-col gap-3">
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Provincia</label>
+              <select
+                className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
+                value={provincia}
+                onChange={e => { setProvincia(e.target.value); setLocalidad(''); setForm({...form, location: ''}) }}
+                required>
+                <option value="">Seleccioná una provincia</option>
+                {Object.keys(LOCATIONS).map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+            {provincia && (
+              <div>
+                <label className="text-gray-400 text-sm mb-1 block">
+                  {LOCATIONS[provincia].type === 'barrios' ? 'Barrio' : 'Ciudad'}
+                </label>
+                <select
+                  className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
+                  value={localidad}
+                  onChange={e => { setLocalidad(e.target.value); setForm({...form, location: `${e.target.value}, ${provincia}`}) }}
+                  required>
+                  <option value="">Seleccioná {LOCATIONS[provincia].type === 'barrios' ? 'un barrio' : 'una ciudad'}</option>
+                  {LOCATIONS[provincia].items.map(item => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </div>
+            )}
+          </div>
+
           <div>
             <label className="text-gray-400 text-sm mb-1 block">Fecha y hora</label>
             <input type="datetime-local" required

@@ -15,3 +15,5 @@ uvicorn main:app --reload &
 # Frontend
 cd ../frontend
 npm run dev
+
+# ./start.sh -> ejecucion
