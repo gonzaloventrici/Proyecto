@@ -160,11 +160,27 @@ export default function CreateEvent() {
             )}
           </div>
 
-          <div>
-            <label className="text-gray-400 text-sm mb-1 block">Fecha y hora</label>
-            <input type="datetime-local" required
-              className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
-              value={form.date} onChange={e => setForm({...form, date: e.target.value})} />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Fecha</label>
+              <input type="date" required
+                className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
+                value={form.date ? form.date.split('T')[0] : ''}
+                onChange={e => {
+                  const time = form.date ? form.date.split('T')[1] : '20:00'
+                  setForm({...form, date: `${e.target.value}T${time}`})
+                }} />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Hora</label>
+              <input type="time" required
+                className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
+                value={form.date ? form.date.split('T')[1] : ''}
+                onChange={e => {
+                  const date = form.date ? form.date.split('T')[0] : new Date().toISOString().split('T')[0]
+                  setForm({...form, date: `${date}T${e.target.value}`})
+                }} />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

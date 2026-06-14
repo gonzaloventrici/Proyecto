@@ -65,7 +65,9 @@ export default function OrganizerProfile() {
             <div style={{width:'80px', height:'80px', borderRadius:'50%', background:'#7c3aed', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'28px', fontWeight:'bold', color:'white', overflow:'hidden'}}>
               {organizer.avatar_url ? (
                 <img src={`http://127.0.0.1:8000${organizer.avatar_url}`} alt="avatar" style={{width:'100%', height:'100%', objectFit:'cover'}} />
-              ) : 'O'}
+              ) : (
+                (organizer.producer_name?.[0] || 'O').toUpperCase()
+              )}
             </div>
             {isOwner && (
               <label style={{position:'absolute', bottom:0, right:0, width:'26px', height:'26px', borderRadius:'50%', background:'#4c1d95', border:'2px solid #111827', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'12px'}}>
@@ -84,7 +86,22 @@ export default function OrganizerProfile() {
             )}
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold mb-1">{organizer.producer_name}</h2>
+            <div className="flex items-center gap-3 mb-1">
+              <h2 className="text-2xl font-bold">{organizer.producer_name}</h2>
+              <span className="bg-purple-900 text-purple-300 text-xs px-3 py-1 rounded-full font-semibold">Organizador</span>
+            </div>
+            {isOwner && organizer.avatar_url && (
+              <button
+                onClick={async () => {
+                  await api.delete('/auth/me/avatar')
+                  setOrganizer({ ...organizer, avatar_url: null })
+                  const userData = JSON.parse(localStorage.getItem('user_data') || '{}')
+                  localStorage.setItem('user_data', JSON.stringify({ ...userData, avatar_url: null }))
+                }}
+                className="text-red-400 hover:text-red-300 text-xs mb-2 transition">
+                Eliminar foto
+              </button>
+            )}
             <div className="flex gap-6 mt-2">
               <div className="text-center">
                 <div className="text-xl font-bold text-purple-400">{organizer.total_events}</div>

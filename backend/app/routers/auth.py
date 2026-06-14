@@ -121,3 +121,15 @@ def get_organizer_profile(user_id: int, db: Session = Depends(get_db)):
         "total_events": len(events),
         "events": [{"id": e.id, "title": e.title, "location": e.location, "date": str(e.date), "price": e.price, "average_rating": e.average_rating, "image_url": e.image_url} for e in events]
     }
+
+@router.delete("/me/avatar")
+def delete_avatar(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    import os
+    if current_user.avatar_url and current_user.avatar_url.startswith('/uploads/'):
+        try:
+            os.remove(current_user.avatar_url[1:])
+        except:
+            pass
+    current_user.avatar_url = None
+    db.commit()
+    return {"message": "Foto eliminada"}
