@@ -1,16 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, Token, LoginRequest
 from passlib.context import CryptContext
-from jose import jwt
-from datetime import datetime, timedelta
-from fastapi.security import OAuth2PasswordRequestForm
-import os
-from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.security import OAuth2PasswordBearer
+from datetime import datetime, timedelta
+import os
 
 router = APIRouter()
 
@@ -94,3 +91,33 @@ def upload_avatar(file: UploadFile = File(...), current_user: User = Depends(get
     db.commit()
     db.refresh(current_user)
     return {"avatar_url": current_user.avatar_url}
+
+@router.get("/organizer/{user_id}")
+def get_organizer_profile(user_id: int, db: Session = Depends(get_db)):
+    from app.models.event import Event
+    from app.models.review import Review
+    
+    organizer = db.query(User).filter(User.id == user_id, User.is_organizer == True).first()
+    if not organizer:
+        raise HTTPException(status_code=404, detail="Organizador no encontrado")
+    
+    events = db.query(Event).filter(Event.organizer_id == user_id).all()
+    
+    total_reviews = 0
+    total_rating = 0
+    for event in events:
+        reviews = db.query(Review).filter(Review.event_id == event.id).all()
+        total_reviews += len(reviews)
+        total_rating += sum(r.rating for r in reviews)
+    
+    avg_rating = round(total_rating / total_reviews, 1) if total_reviews > 0 else 0
+
+    return {
+        "id": organizer.id,
+        "producer_name": organizer.producer_name or organizer.email,
+        "avatar_url": organizer.avatar_url,
+        "avg_rating": avg_rating,
+        "total_reviews": total_reviews,
+        "total_events": len(events),
+        "events": [{"id": e.id, "title": e.title, "location": e.location, "date": str(e.date), "price": e.price, "average_rating": e.average_rating, "image_url": e.image_url} for e in events]
+    }

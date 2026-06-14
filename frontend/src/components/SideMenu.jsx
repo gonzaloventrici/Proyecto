@@ -80,7 +80,7 @@ export default function SideMenu({ isOpen, onClose }) {
 
         {/* Menu items */}
         <div style={{flex:1, padding:'16px 0', display:'flex', flexDirection:'column', gap:'4px'}}>
-          <MenuItem icon="" label="Mi perfil" to="/profile" onClose={onClose} />
+          <MenuItem icon="" label="Mi perfil" to={user?.isOrganizer ? `/organizer/${user?.userId}` : '/fiestero-profile'} onClose={onClose} />
           {user?.isOrganizer ? (
             <MenuItem icon="" label="Mis eventos" to="/my-events" onClose={onClose} />
           ) : (
