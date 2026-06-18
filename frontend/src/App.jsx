@@ -14,6 +14,7 @@ import OrganizerProfile from './pages/OrganizerProfile'
 import FiesteroProfile from './pages/FiesteroProfile'
 import OrganizerEvents from './pages/OrganizerEvents'
 import OrganizerReviews from './pages/OrganizerReviews'
+import UserProfile from './pages/UserProfile'
 
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/fiestero-profile" element={<FiesteroProfile />} />
           <Route path="/organizer/:id/events" element={<OrganizerEvents />} />
           <Route path="/organizer/:id/reviews" element={<OrganizerReviews />} />
+          <Route path="/user/:id" element={<UserProfile />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

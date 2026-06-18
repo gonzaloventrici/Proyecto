@@ -145,3 +145,33 @@ def delete_avatar(current_user: User = Depends(get_current_user), db: Session = 
     current_user.avatar_url = None
     db.commit()
     return {"message": "Foto eliminada"}
+
+@router.get("/user/{user_id}")
+def get_user_profile(user_id: int, db: Session = Depends(get_db)):
+    from app.models.review import Review
+    from app.models.event import Event
+
+    user = db.query(User).filter(User.id == user_id, User.is_organizer == False).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    reviews = db.query(Review).filter(Review.user_id == user_id).all()
+    all_reviews = []
+    for r in reviews:
+        event = db.query(Event).filter(Event.id == r.event_id).first()
+        all_reviews.append({
+            "id": r.id,
+            "event_id": r.event_id,
+            "event_title": event.title if event else "Evento eliminado",
+            "rating": r.rating,
+            "comment": r.comment,
+            "created_at": str(r.created_at)
+        })
+
+    return {
+        "id": user.id,
+        "name": user.name,
+        "avatar_url": user.avatar_url,
+        "total_reviews": len(all_reviews),
+        "reviews": all_reviews
+    }

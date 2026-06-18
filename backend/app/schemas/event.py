@@ -26,6 +26,7 @@ class EventResponse(BaseModel):
     created_at: datetime
     is_recurring: bool
     tickets_sold: int = 0
+    organizer_rating: Optional[float] = None
 
     class Config:
         from_attributes = True

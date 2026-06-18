@@ -17,7 +17,19 @@ router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def add_tickets_sold(event, db):
+    from app.models.review import Review
     event.tickets_sold = db.query(Ticket).filter(Ticket.event_id == event.id).count()
+    
+    # rating promedio del organizador
+    from app.models.event import Event as EventModel
+    org_events = db.query(EventModel).filter(EventModel.organizer_id == event.organizer_id).all()
+    total_rating = 0
+    total_reviews = 0
+    for e in org_events:
+        reviews = db.query(Review).filter(Review.event_id == e.id).all()
+        total_rating += sum(r.rating for r in reviews)
+        total_reviews += len(reviews)
+    event.organizer_rating = round(total_rating / total_reviews, 1) if total_reviews > 0 else None
     return event
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):

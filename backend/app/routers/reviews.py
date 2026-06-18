@@ -8,6 +8,7 @@ from app.models.user import User
 from app.schemas.review import ReviewCreate, ReviewResponse
 from app.routers.events import get_current_user
 from datetime import datetime, timezone
+from app.models.user import User
 
 router = APIRouter()
 
@@ -54,11 +55,15 @@ def create_review(review: ReviewCreate, db: Session = Depends(get_db), current_u
 
 @router.get("/me", response_model=list[ReviewResponse])
 def get_my_reviews(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return db.query(Review).filter(Review.user_id == current_user.id).all()
+    reviews = db.query(Review).filter(Review.user_id == current_user.id).all()
+    for r in reviews:
+        r.user_name = current_user.name
+    return reviews
 
 @router.get("/{event_id}", response_model=list[ReviewResponse])
 def get_reviews(event_id: int, db: Session = Depends(get_db)):
-    event = db.query(Event).filter(Event.id == event_id).first()
-    if not event:
-        raise HTTPException(status_code=404, detail="Evento no encontrado")
-    return db.query(Review).filter(Review.event_id == event_id).all()
+    reviews = db.query(Review).filter(Review.event_id == event_id).all()
+    for r in reviews:
+        user = db.query(User).filter(User.id == r.user_id).first()
+        r.user_name = user.name if user else None
+    return reviews

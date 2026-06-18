@@ -49,20 +49,29 @@ export default function OrganizerReviews() {
         ) : (
           <div className="flex flex-col gap-4">
             {organizer.reviews.map(r => (
-              <div
-                key={r.id}
-                className="bg-gray-900 rounded-2xl p-6 cursor-pointer hover:ring-2 hover:ring-purple-500 transition"
-                onClick={() => navigate(`/events/${r.event_id}`)}>
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="text-purple-400 text-sm font-semibold mb-1">{r.event_title}</p>
-                    <span className="text-yellow-400">{'⭐'.repeat(Math.round(r.rating))}</span>
-                  </div>
-                  <span className="text-gray-500 text-xs">{new Date(r.created_at).toLocaleDateString('es-AR')}</span>
+          <div
+            key={r.id}
+            className="bg-gray-900 rounded-2xl p-6 cursor-pointer hover:ring-2 hover:ring-purple-500 transition"
+            onClick={() => navigate(`/events/${r.event_id}`)}>
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <p className="text-purple-400 text-sm font-semibold mb-1">{r.event_title}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-yellow-400">{'⭐'.repeat(Math.round(r.rating))}</span>
+                  {r.user_name && (
+                      <span
+                        className="text-gray-500 text-base hover:text-purple-400 transition cursor-pointer"
+                        onClick={e => { e.stopPropagation(); navigate(`/user/${r.user_id}`) }}>
+                        {' - '} {r.user_name}
+                      </span>
+                    )}
                 </div>
-                <p className="text-gray-300 mt-2">{r.comment}</p>
               </div>
-            ))}
+              <span className="text-gray-500 text-xs">{new Date(r.created_at).toLocaleDateString('es-AR')}</span>
+            </div>
+            <p className="text-gray-300 mt-2">{r.comment}</p>
+          </div>
+        ))}
           </div>
         )}
       </div>

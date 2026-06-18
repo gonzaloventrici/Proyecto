@@ -195,7 +195,7 @@ export default function OrganizerProfile() {
         {!organizer.reviews || organizer.reviews.length === 0 ? (
           <p className="text-gray-400 mb-8">Aún no hay reseñas.</p>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 mb-10">
             {organizer.reviews.slice(0, 5).map(r => (
               <div
                 key={r.id}
@@ -204,7 +204,16 @@ export default function OrganizerProfile() {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <p className="text-purple-400 text-sm font-semibold mb-1">{r.event_title}</p>
-                    <span className="text-yellow-400">{'⭐'.repeat(Math.round(r.rating))}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-400">{'⭐'.repeat(Math.round(r.rating))}</span>
+                      {r.user_name && (
+                      <span
+                        className="text-gray-500 text-base hover:text-purple-400 transition cursor-pointer"
+                        onClick={e => { e.stopPropagation(); navigate(`/user/${r.user_id}`) }}>
+                        {' - '} {r.user_name}
+                      </span>
+                    )}
+                    </div>
                   </div>
                   <span className="text-gray-500 text-xs">{new Date(r.created_at).toLocaleDateString('es-AR')}</span>
                 </div>

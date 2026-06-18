@@ -194,7 +194,16 @@ export default function EventDetail() {
             reviews.map(r => (
               <div key={r.id} className="border-b border-gray-800 py-4">
                 <div className="flex justify-between mb-1">
-                  <span className="text-yellow-400">{'⭐'.repeat(Math.round(r.rating))}</span>
+                  <div>
+                    <span className="text-yellow-400">{'⭐'.repeat(Math.round(r.rating))}</span>
+                    {r.user_name && (
+                      <span
+                        className="text-gray-500 text-base hover:text-purple-400 transition cursor-pointer"
+                        onClick={e => { e.stopPropagation(); navigate(`/user/${r.user_id}`) }}>
+                        {' - '} {r.user_name}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-gray-500 text-sm">{new Date(r.created_at).toLocaleDateString()}</span>
                 </div>
                 <p className="text-gray-300">{r.comment}</p>

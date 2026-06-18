@@ -56,6 +56,10 @@ function EventCardSkeleton() {
 function EventCard({ event }) {
   const [primaryImage, setPrimaryImage] = useState(null)
   const [organizerName, setOrganizerName] = useState('')
+  const now = new Date()
+  const eventDate = new Date(event.date)
+  const diffDays = Math.ceil((now - eventDate) / (1000 * 60 * 60 * 24))
+  const showReviewBadge = eventDate < now && diffDays <= 3
 
   useEffect(() => {
     api.get(`/events/${event.id}/images`).then(res => {
@@ -71,7 +75,9 @@ function EventCard({ event }) {
   return (
     <Link to={`/events/${event.id}`}>
       <div className="bg-gray-900 rounded-2xl overflow-hidden hover:ring-2 hover:ring-purple-500 transition">
-        <div className="bg-gray-800 h-40 flex items-center justify-center overflow-hidden">
+        
+        {/* Contenedor de la imagen con 'relative' para posicionar el badge encima */}
+        <div className="bg-gray-800 h-40 flex items-center justify-center overflow-hidden relative">
           {primaryImage ? (
             <img
               src={`http://127.0.0.1:8000${primaryImage.url}`}
@@ -81,7 +87,15 @@ function EventCard({ event }) {
           ) : (
             <span className="text-4xl text-gray-600">📷</span>
           )}
+
+          {/* El badge ahora está fuera de p-5 y posicionado sobre la imagen */}
+          {showReviewBadge && (
+            <div className="absolute top-3 right-3 bg-gray-900/90 backdrop-blur-sm text-purple-400 text-xs px-2.5 py-1 rounded-lg shadow-md border border-purple-500/30">
+              ⏳ Tenés {3 - diffDays + 1} día{3 - diffDays + 1 !== 1 ? 's' : ''} para reseñar
+            </div>
+          )}
         </div>
+
         <div className="p-5">
           <h3 className="text-lg font-semibold mb-1">
             {event.title}
@@ -90,7 +104,17 @@ function EventCard({ event }) {
           <p className="text-gray-400 text-sm mb-2">{event.location}</p>
           <div className="flex justify-between items-center">
             <span className="text-purple-400 font-bold">${event.price.toLocaleString()}</span>
-            <span className="text-yellow-400 text-sm">⭐ {event.average_rating.toFixed(1)}</span>
+            {new Date(event.date) > now ? (
+              <div className="text-center">
+                <div className="text-yellow-400 text-sm">⭐ {event.organizer_rating ? event.organizer_rating.toFixed(1) : '0.0'}</div>
+                <div className="text-gray-500 text-xs">Organizador</div>
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="text-yellow-400 text-sm">⭐ {event.average_rating.toFixed(1)}</div>
+                <div className="text-gray-500 text-xs">Evento</div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -135,16 +159,21 @@ export default function Home() {
     setSortBy('recent')
   }
 
+  const now = new Date()
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
+
   let filteredEvents = events.filter(event => {
-    if (search && !event.title.toLowerCase().includes(search.toLowerCase())) return false
-    if (provincia && !event.location.includes(provincia)) return false
-    if (localidad && !event.location.includes(localidad)) return false
-    if (minPrice && parseFloat(minPrice) > 0 && event.price < parseFloat(minPrice)) return false
-    if (maxPrice && parseFloat(maxPrice) > 0 && event.price > parseFloat(maxPrice)) return false
-    if (dateFrom && new Date(event.date) < new Date(dateFrom)) return false
-    if (dateTo && new Date(event.date) > new Date(dateTo + 'T23:59:59')) return false
-    return true
-  })
+  const eventDate = new Date(event.date)
+  if (eventDate < threeDaysAgo) return false // ocultar si pasaron más de 3 días
+  if (search && !event.title.toLowerCase().includes(search.toLowerCase())) return false
+  if (provincia && !event.location.includes(provincia)) return false
+  if (localidad && !event.location.includes(localidad)) return false
+  if (minPrice && parseFloat(minPrice) > 0 && event.price < parseFloat(minPrice)) return false
+  if (maxPrice && parseFloat(maxPrice) > 0 && event.price > parseFloat(maxPrice)) return false
+  if (dateFrom && new Date(event.date) < new Date(dateFrom)) return false
+  if (dateTo && new Date(event.date) > new Date(dateTo + 'T23:59:59')) return false
+  return true
+})
 
   if (sortBy === 'price_asc') filteredEvents = [...filteredEvents].sort((a, b) => a.price - b.price)
   else if (sortBy === 'price_desc') filteredEvents = [...filteredEvents].sort((a, b) => b.price - a.price)

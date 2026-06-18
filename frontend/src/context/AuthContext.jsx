@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
   return token ? parseToken(token) : null
 })
 
-  const login = async (token) => {
+const login = async (token) => {
   localStorage.setItem('token', token)
   const payload = parseToken(token)
   setUser(payload)
@@ -28,8 +28,13 @@ export function AuthProvider({ children }) {
       headers: { Authorization: `Bearer ${token}` }
     })
     const data = await res.json()
-    setUser({ ...payload, avatar_url: data.avatar_url })
-    localStorage.setItem('user_data', JSON.stringify({ ...payload, avatar_url: data.avatar_url }))
+    const fullUser = {
+      ...payload,
+      avatar_url: data.avatar_url,
+      name: data.is_organizer ? data.producer_name : data.name
+    }
+    setUser(fullUser)
+    localStorage.setItem('user_data', JSON.stringify(fullUser))
   } catch {}
 }
 
