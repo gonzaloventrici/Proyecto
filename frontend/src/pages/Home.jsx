@@ -55,11 +55,16 @@ function EventCardSkeleton() {
 
 function EventCard({ event }) {
   const [primaryImage, setPrimaryImage] = useState(null)
+  const [organizerName, setOrganizerName] = useState('')
 
   useEffect(() => {
     api.get(`/events/${event.id}/images`).then(res => {
       const primary = res.data.find(img => img.is_primary) || res.data[0]
       setPrimaryImage(primary)
+    }).catch(() => {})
+
+    api.get(`/auth/organizer/${event.organizer_id}`).then(res => {
+      setOrganizerName(res.data.producer_name)
     }).catch(() => {})
   }, [event.id])
 
@@ -78,7 +83,10 @@ function EventCard({ event }) {
           )}
         </div>
         <div className="p-5">
-          <h3 className="text-lg font-semibold mb-1">{event.title}</h3>
+          <h3 className="text-lg font-semibold mb-1">
+            {event.title}
+            {organizerName && <span className="text-gray-500 font-normal text-sm"> · {organizerName}</span>}
+          </h3>
           <p className="text-gray-400 text-sm mb-2">{event.location}</p>
           <div className="flex justify-between items-center">
             <span className="text-purple-400 font-bold">${event.price.toLocaleString()}</span>
