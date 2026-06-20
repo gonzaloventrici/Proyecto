@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import SideMenu from '../components/SideMenu'
 import api from '../services/api'
+import BackButton from '../components/BackButton'
 
 export default function MyEvents() {
   const { user } = useAuth()
@@ -42,6 +43,7 @@ export default function MyEvents() {
           </button>
           <h1 className="text-xl font-bold text-purple-400 cursor-pointer" onClick={() => navigate('/events')}>Wharty</h1>
         </div>
+        <BackButton />
       </nav>
 
       <div className="max-w-4xl mx-auto px-6 py-10">
@@ -78,10 +80,13 @@ export default function MyEvents() {
                   <div>
                     <h3 className="text-lg font-semibold">{event.title}</h3>
                     <p className="text-gray-400 text-sm">{event.location}</p>
-                    <div className="flex gap-4 mt-1">
+                    <div className="flex gap-4 mt-1 items-center">
                       <span className="text-purple-400 text-sm font-bold">${event.price.toLocaleString()}</span>
                       <span className="text-yellow-400 text-sm">⭐ {event.average_rating.toFixed(1)}</span>
                       <span className="text-gray-500 text-sm">{new Date(event.date).toLocaleDateString()}</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${event.tickets_sold >= event.capacity ? 'bg-red-900 text-red-300' : 'bg-gray-800 text-gray-300'}`}>
+                        {event.tickets_sold} / {event.capacity} entradas
+                      </span>
                     </div>
                   </div>
                 </div>

@@ -27,13 +27,13 @@ export default function Login() {
 
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-5xl font-bold text-purple-400 mb-3">WHARTY</h1>
-          <p className="text-gray-400 text-lg">Descubrí los mejores eventos de tu ciudad</p>
+          <h1 className="text-5xl font-bold text-purple-400 mb-3">Wharty</h1>
+          <p className="text-gray-400 text-lg">La salida que vos necesitas, al alcance de tu mano.</p>
         </div>
 
         {/* Card */}
         <div className="bg-gray-900 p-8 rounded-2xl">
-          <h2 className="text-2xl font-bold text-white mb-1">Bienvenido de nuevo</h2>
+          <h2 className="text-2xl font-bold text-white mb-1">Bienvenido</h2>
           <p className="text-gray-500 text-sm mb-6">Ingresá tu cuenta para continuar</p>
 
           {error && <p className="text-red-400 mb-4 text-sm">{error}</p>}
@@ -43,7 +43,7 @@ export default function Login() {
               <label className="text-gray-400 text-sm mb-1 block">Email</label>
               <input
                 type="email"
-                placeholder="tucorreo@email.com"
+                placeholder="Email"
                 className="bg-gray-800 text-white rounded-lg px-4 py-3 outline-none w-full"
                 value={form.email}
                 onChange={e => setForm({...form, email: e.target.value})}
@@ -54,7 +54,7 @@ export default function Login() {
               <label className="text-gray-400 text-sm mb-1 block">Contraseña</label>
               <input
                 type="password"
-                placeholder="••••••••"
+                placeholder="••••"
                 className="bg-gray-800 text-white rounded-lg px-4 py-3 outline-none w-full"
                 value={form.password}
                 onChange={e => setForm({...form, password: e.target.value})}

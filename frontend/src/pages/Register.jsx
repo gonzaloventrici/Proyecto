@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import api from '../services/api'
+import BackButton from '../components/BackButton'
 
 function isOver18(birthDate) {
   const today = new Date()
@@ -20,6 +21,9 @@ export default function Register() {
     corporate_email: '', phone: '', cbu: ''
   })
   const [error, setError] = useState('')
+  const [dniError, setDniError] = useState('')
+  const [phoneError, setPhoneError] = useState('')
+  const [cbuError, setCbuError] = useState('')
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -69,6 +73,9 @@ export default function Register() {
 
         {step === 1 ? (
           <>
+          <div className="mb-4">
+            <BackButton />
+          </div>
             <h1 className="text-2xl font-bold text-white mb-2">Crear cuenta</h1>
             <p className="text-gray-400 mb-8">¿Cómo querés usar Wharty?</p>
             <div className="flex flex-col gap-4">
@@ -93,9 +100,9 @@ export default function Register() {
           </>
         ) : (
           <>
-            <button onClick={() => setStep(1)} className="text-gray-400 hover:text-white text-sm mb-6 flex items-center gap-2 transition">
-              ← Volver
-            </button>
+            <div className="flex gap-4 mb-6">
+              <BackButton />
+            </div>
             <h1 className="text-2xl font-bold text-white mb-2">
               {role === 'organizer' ? '🎛️ Cuenta de organizador' : '🎉 Cuenta de fiestero'}
             </h1>
@@ -120,9 +127,21 @@ export default function Register() {
                       className="bg-gray-800 text-white rounded-lg px-4 py-3 outline-none w-full"
                       value={form.birth_date} onChange={e => setForm({...form, birth_date: e.target.value})} />
                   </div>
-                  <input type="text" placeholder="DNI / Pasaporte" required
-                    className="bg-gray-800 text-white rounded-lg px-4 py-3 outline-none"
-                    value={form.dni} onChange={e => setForm({...form, dni: e.target.value})} />
+                  <div>
+                    <input type="text" placeholder="DNI / Pasaporte" required
+                      className={`bg-gray-800 text-white rounded-lg px-4 py-3 outline-none w-full ${dniError ? 'ring-2 ring-red-500' : ''}`}
+                      value={form.dni}
+                      onChange={e => {
+                        const val = e.target.value
+                        if (/^\d*$/.test(val)) {
+                          setForm({...form, dni: val})
+                          setDniError('')
+                        } else {
+                          setDniError('El DNI solo puede contener números')
+                        }
+                      }} />
+                    {dniError && <p className="text-red-400 text-xs mt-1">{dniError}</p>}
+                  </div>
                   <div>
                     <label className="text-gray-400 text-sm mb-2 block">Género</label>
                     <div className="flex gap-3">
@@ -144,7 +163,7 @@ export default function Register() {
                   <input type="text" placeholder="CUIT / CUIL" required
                     className="bg-gray-800 text-white rounded-lg px-4 py-3 outline-none"
                     value={form.cuit} onChange={e => setForm({...form, cuit: e.target.value})} />
-                  <input type="text" placeholder="Razón Social (opcional)"
+                  <input type="text" placeholder="Razón Social"
                     className="bg-gray-800 text-white rounded-lg px-4 py-3 outline-none"
                     value={form.razon_social} onChange={e => setForm({...form, razon_social: e.target.value})} />
                   <input type="email" placeholder="Email de acceso" required
@@ -159,12 +178,36 @@ export default function Register() {
                       value={form.corporate_email} onChange={e => setForm({...form, corporate_email: e.target.value})} />
                     <p className="text-gray-500 text-xs mt-1">Si lo dejás vacío se usará tu email de acceso</p>
                   </div>
-                  <input type="tel" placeholder="Teléfono" required
-                    className="bg-gray-800 text-white rounded-lg px-4 py-3 outline-none"
-                    value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
-                  <input type="text" placeholder="CBU / CVU" required
-                    className="bg-gray-800 text-white rounded-lg px-4 py-3 outline-none"
-                    value={form.cbu} onChange={e => setForm({...form, cbu: e.target.value})} />
+                  <div>
+                    <input type="tel" placeholder="Teléfono" required
+                      className={`bg-gray-800 text-white rounded-lg px-4 py-3 outline-none w-full ${phoneError ? 'ring-2 ring-red-500' : ''}`}
+                      value={form.phone}
+                      onChange={e => {
+                        const val = e.target.value
+                        if (/^\d*$/.test(val)) {
+                          setForm({...form, phone: val})
+                          setPhoneError('')
+                        } else {
+                          setPhoneError('El teléfono solo puede contener números')
+                        }
+                      }} />
+                    {phoneError && <p className="text-red-400 text-xs mt-1">{phoneError}</p>}
+                  </div>
+                  <div>
+                    <input type="text" placeholder="CBU / CVU" required
+                      className={`bg-gray-800 text-white rounded-lg px-4 py-3 outline-none w-full ${cbuError ? 'ring-2 ring-red-500' : ''}`}
+                      value={form.cbu}
+                      onChange={e => {
+                        const val = e.target.value
+                        if (/^\d*$/.test(val)) {
+                          setForm({...form, cbu: val})
+                          setCbuError('')
+                        } else {
+                          setCbuError('El CBU solo puede contener números')
+                        }
+                      }} />
+                    {cbuError && <p className="text-red-400 text-xs mt-1">{cbuError}</p>}
+                  </div>
                 </>
               )}
 

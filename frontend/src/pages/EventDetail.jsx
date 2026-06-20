@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import CheckoutModal from '../components/CheckoutModal'
 import api from '../services/api'
+import BackButton from '../components/BackButton'
+import SideMenu from '../components/SideMenu'
 
 export default function EventDetail() {
   const { id } = useParams()
@@ -18,6 +20,7 @@ export default function EventDetail() {
   const [organizer, setOrganizer] = useState(null)
   const [alreadyReviewed, setAlreadyReviewed] = useState(false)
   const [commentError, setCommentError] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     api.get(`/events/${id}`).then(res => setEvent(res.data))
@@ -68,7 +71,20 @@ export default function EventDetail() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-
+      <SideMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <nav className="bg-gray-900 px-6 py-4 flex justify-between items-center">
+        <div className="flex gap-4 items-center">
+          {user && (
+            <button onClick={() => setMenuOpen(true)} style={{width:'38px', height:'38px', borderRadius:'8px', background:'transparent', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', gap:'5px', padding:'4px'}}>
+              <span style={{display:'block', width:'22px', height:'2px', background:'#a78bfa', borderRadius:'2px'}}></span>
+              <span style={{display:'block', width:'22px', height:'2px', background:'#a78bfa', borderRadius:'2px'}}></span>
+              <span style={{display:'block', width:'22px', height:'2px', background:'#a78bfa', borderRadius:'2px'}}></span>
+            </button>
+          )}
+          <h1 className="text-xl font-bold text-purple-400 cursor-pointer" onClick={() => navigate('/events')}>Wharty</h1>
+        </div>
+        <BackButton />
+      </nav>
       {showCheckout && (
         <CheckoutModal
           event={event}
@@ -98,6 +114,11 @@ export default function EventDetail() {
               <div><span className="text-gray-500">Precio</span><p className="text-purple-400 font-bold">${event.price.toLocaleString()}</p></div>
               <div><span className="text-gray-500">Rating</span><p className="text-yellow-400">⭐ {event.average_rating.toFixed(1)}</p></div>
             </div>
+            {event.tickets_sold >= event.capacity && !eventPassed && (
+              <div className="bg-red-900/30 border border-red-800 text-red-300 text-sm rounded-lg px-4 py-2 mb-6 text-center font-semibold">
+                Entradas agotadas
+              </div>
+            )}
 
             {/* Organizador */}
             <div
@@ -115,7 +136,7 @@ export default function EventDetail() {
                 </p>
               </div>
               {user?.userId !== String(event.organizer_id) && (
-                <span className="text-gray-500 text-sm">→</span>
+                <span className="text-gray-500 text-sm"></span>
               )}
             </div>
 
@@ -132,17 +153,32 @@ export default function EventDetail() {
               </div>
             )}
 
-            {user && !eventPassed && !user.isOrganizer && (
-              <button
-                onClick={() => setShowCheckout(true)}
-                className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition w-full">
-                Comprar entrada
-              </button>
-            )}
+            {(() => {
+              const soldOut = event.tickets_sold >= event.capacity
 
-            {eventPassed && (
-              <p className="text-gray-500 text-sm text-center">Este evento ya ocurrió</p>
-            )}
+              if (eventPassed) {
+                return <p className="text-gray-500 text-sm text-center">Este evento ya ocurrió</p>
+              }
+
+              if (user && !user.isOrganizer) {
+                if (soldOut) {
+                  return (
+                    <button disabled className="bg-gray-800 text-gray-500 px-6 py-3 rounded-lg font-semibold w-full cursor-not-allowed">
+                      Agotado
+                    </button>
+                  )
+                }
+                return (
+                  <button
+                    onClick={() => setShowCheckout(true)}
+                    className="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg font-semibold transition w-full">
+                    Comprar entrada
+                  </button>
+                )
+              }
+
+              return null
+            })()}
 
             {success && <p className="mt-3 text-center text-sm text-green-400">{success}</p>}
             {error && <p className="mt-3 text-center text-sm text-red-400">{error}</p>}
@@ -158,7 +194,16 @@ export default function EventDetail() {
             reviews.map(r => (
               <div key={r.id} className="border-b border-gray-800 py-4">
                 <div className="flex justify-between mb-1">
-                  <span className="text-yellow-400">{'⭐'.repeat(Math.round(r.rating))}</span>
+                  <div>
+                    <span className="text-yellow-400">{'⭐'.repeat(Math.round(r.rating))}</span>
+                    {r.user_name && (
+                      <span
+                        className="text-gray-500 text-base hover:text-purple-400 transition cursor-pointer"
+                        onClick={e => { e.stopPropagation(); navigate(`/user/${r.user_id}`) }}>
+                        {' - '} {r.user_name}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-gray-500 text-sm">{new Date(r.created_at).toLocaleDateString()}</span>
                 </div>
                 <p className="text-gray-300">{r.comment}</p>

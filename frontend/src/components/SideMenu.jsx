@@ -51,39 +51,50 @@ export default function SideMenu({ isOpen, onClose }) {
         background:'#111827', zIndex:50, display:'flex', flexDirection:'column',
         padding:'24px 0'
       }}>
+        
         {/* Header */}
-        <div style={{padding:'0 24px 24px', borderBottom:'1px solid #1f2937'}}>
-          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'12px'}}>
+        <div style={{padding:'0 24px 20px', borderBottom:'1px solid #1f2937', marginBottom:'8px'}}>
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px'}}>
             <span style={{color:'#a78bfa', fontWeight:'bold', fontSize:'18px'}}>Wharty</span>
-            <button onClick={onClose} style={{color:'#6b7280', background:'none', border:'none', cursor:'pointer', fontSize:'20px'}}>✕</button>
+            <button onClick={onClose} style={{color:'#a78bfa', background:'none', border:'none', cursor:'pointer', fontSize:'20px'}}>✕</button>
           </div>
-          <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-            <div style={{
-              width:'44px', height:'44px', borderRadius:'50%',
-              background:'#7c3aed', display:'flex', alignItems:'center',
-              justifyContent:'center', color:'white', fontWeight:'bold', fontSize:'18px',
-              overflow:'hidden', flexShrink:0
-            }}>
-              {user?.avatar_url ? (
-                <img src={`http://127.0.0.1:8000${user.avatar_url}`} alt="avatar" style={{width:'100%', height:'100%', objectFit:'cover'}} />
-              ) : (
-                (user?.name?.[0] || (user?.isOrganizer ? 'O' : 'F')).toUpperCase()
-              )}
-            </div>
-            <div>
-              <div style={{color:'white', fontWeight:'600', fontSize:'14px'}}>
+          <div style={{display:'flex', flexDirection:'column', gap:'8px'}}>
+            <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
+              <div style={{
+                width:'44px', height:'44px', borderRadius:'50%',
+                background:'#7c3aed', display:'flex', alignItems:'center',
+                justifyContent:'center', color:'white', fontWeight:'bold', fontSize:'18px',
+                overflow:'hidden', flexShrink:0
+              }}>
+                {user?.avatar_url ? (
+                  <img src={`http://127.0.0.1:8000${user.avatar_url}`} alt="avatar" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                ) : (
+                  (user?.name?.[0] || (user?.isOrganizer ? 'O' : 'F')).toUpperCase()
+                )}
+              </div>
+              <div style={{color:'white', fontWeight:'600', fontSize:'15px'}}>
                 {user?.name || (user?.isOrganizer ? 'Organizador' : 'Fiestero')}
               </div>
-              <div style={{color:'#a78bfa', fontSize:'11px', fontWeight:'600', marginTop:'2px'}}>
-                {user?.isOrganizer ? 'Cuenta Organizador' : 'Cuenta Fiestero'}
-              </div>
             </div>
+            <span style={{
+              display:'inline-block',
+              background:'#3b0764',
+              color:'#c4b5fd',
+              fontSize:'11px',
+              fontWeight:'600',
+              padding:'3px 10px',
+              borderRadius:'999px',
+              width:'fit-content'
+            }}>
+              {user?.isOrganizer ? 'Organizador' : 'Fiestero'}
+            </span>
           </div>
         </div>
 
         {/* Menu items */}
         <div style={{flex:1, padding:'16px 0', display:'flex', flexDirection:'column', gap:'4px'}}>
-          <MenuItem icon="" label="Mi perfil" to={user?.isOrganizer ? `/organizer/${user?.userId}` : '/fiestero-profile'} onClose={onClose} />
+          <MenuItem icon="" label="Inicio" to="/events" onClose={onClose} />
+          <MenuItem icon="" label="Mi perfil" to={user?.isOrganizer ? `/organizer/${user?.userId}` : `/user/${user?.userId}`} onClose={onClose} />
           {user?.isOrganizer ? (
             <MenuItem icon="" label="Mis eventos" to="/my-events" onClose={onClose} />
           ) : (

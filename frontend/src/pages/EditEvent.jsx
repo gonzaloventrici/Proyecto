@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import SideMenu from '../components/SideMenu'
 import api from '../services/api'
+import BackButton from '../components/BackButton'
 
 const LOCATIONS = {
   'Buenos Aires (CABA)': {
@@ -54,6 +55,7 @@ export default function EditEvent() {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [done, setDone] = useState(false)
 
   useEffect(() => {
     api.get(`/events/${id}`).then(res => {
@@ -124,7 +126,8 @@ export default function EditEvent() {
         capacity: parseInt(form.capacity),
         date: new Date(form.date).toISOString()
       })
-      setSuccess('Evento actualizado correctamente')
+      setDone(true)
+      setTimeout(() => navigate('/my-events'), 1500)
     } catch {
       setError('Error al actualizar el evento')
     } finally {
@@ -133,6 +136,15 @@ export default function EditEvent() {
   }
 
   if (loading) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">Cargando...</div>
+  if (done) return (
+  <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+    <div className="text-center">
+      <div className="text-5xl mb-4">✅</div>
+      <h2 className="text-2xl font-bold mb-2">Evento actualizado correctamente</h2>
+      <p className="text-gray-400">Redirigiendo a tus eventos...</p>
+    </div>
+  </div>
+)
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -147,9 +159,12 @@ export default function EditEvent() {
           </button>
           <h1 className="text-xl font-bold text-purple-400 cursor-pointer" onClick={() => navigate('/events')}>Wharty</h1>
         </div>
-        <button onClick={() => navigate('/my-events')} className="text-gray-400 hover:text-white transition text-sm">
-          ← Mis eventos
-        </button>
+        <div className="flex gap-4 items-center">
+          <BackButton />
+          <button onClick={() => navigate('/my-events')} className="text-purple-400 hover:text-purple-300 transition text-sm font-semibold">
+            Mis eventos
+          </button>
+        </div>
       </nav>
 
       <div className="max-w-2xl mx-auto px-6 py-10">
@@ -238,11 +253,27 @@ export default function EditEvent() {
             )}
           </div>
 
-          <div>
-            <label className="text-gray-400 text-sm mb-1 block">Fecha y hora</label>
-            <input type="datetime-local" required
-              className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
-              value={form.date} onChange={e => setForm({...form, date: e.target.value})} />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Fecha</label>
+              <input type="date" required
+                className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
+                value={form.date ? form.date.split('T')[0] : ''}
+                onChange={e => {
+                  const time = form.date ? form.date.split('T')[1] : '20:00'
+                  setForm({...form, date: `${e.target.value}T${time}`})
+                }} />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Hora</label>
+              <input type="time" required
+                className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
+                value={form.date ? form.date.split('T')[1] : ''}
+                onChange={e => {
+                  const date = form.date ? form.date.split('T')[0] : new Date().toISOString().split('T')[0]
+                  setForm({...form, date: `${date}T${e.target.value}`})
+                }} />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <input type="number" placeholder="Precio" required

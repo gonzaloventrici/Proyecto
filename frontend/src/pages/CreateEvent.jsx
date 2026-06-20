@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import SideMenu from '../components/SideMenu'
 import api from '../services/api'
+import BackButton from '../components/BackButton'
 
 const LOCATIONS = {
   'Buenos Aires (CABA)': {
@@ -112,9 +113,12 @@ export default function CreateEvent() {
           </button>
           <h1 className="text-xl font-bold text-purple-400 cursor-pointer" onClick={() => navigate('/events')}>Wharty</h1>
         </div>
-        <button onClick={() => navigate('/my-events')} className="text-gray-400 hover:text-white transition text-sm">
-          ← Mis eventos
-        </button>
+        <div className="flex gap-4 items-center">
+          <BackButton />
+          <button onClick={() => navigate('/my-events')} className="text-purple-400 hover:text-purple-300 transition text-sm font-semibold">
+            Mis eventos
+          </button>
+        </div>
       </nav>
 
       <div className="max-w-2xl mx-auto px-6 py-10">
@@ -160,31 +164,49 @@ export default function CreateEvent() {
             )}
           </div>
 
-          <div>
-            <label className="text-gray-400 text-sm mb-1 block">Fecha y hora</label>
-            <input type="datetime-local" required
-              className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
-              value={form.date} onChange={e => setForm({...form, date: e.target.value})} />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Fecha</label>
+              <input type="date" required
+                className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
+                value={form.date ? form.date.split('T')[0] : ''}
+                onChange={e => {
+                  const time = form.date ? form.date.split('T')[1] : '20:00'
+                  setForm({...form, date: `${e.target.value}T${time}`})
+                }} />
+            </div>
+            <div>
+              <label className="text-gray-400 text-sm mb-1 block">Hora</label>
+              <input type="time" required
+                className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none w-full"
+                value={form.date ? form.date.split('T')[1] : ''}
+                onChange={e => {
+                  const date = form.date ? form.date.split('T')[0] : new Date().toISOString().split('T')[0]
+                  setForm({...form, date: `${date}T${e.target.value}`})
+                }} />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <input type="number" placeholder="Precio" required
-              className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none"
-              value={form.price} onChange={e => setForm({...form, price: e.target.value})} />
-            <input type="number" placeholder="Capacidad" required
-              className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none"
-              value={form.capacity} onChange={e => setForm({...form, capacity: e.target.value})} />
+            <input
+            type="number"
+            placeholder="Precio"
+            required
+            className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none"
+            value={form.price}
+            onChange={e => setForm({...form, price: e.target.value})}
+            onWheel={e => e.target.blur()}
+          />
+          <input
+            type="number"
+            placeholder="Capacidad"
+            required
+            className="bg-gray-900 text-white rounded-lg px-4 py-3 outline-none"
+            value={form.capacity}
+            onChange={e => setForm({...form, capacity: e.target.value})}
+            onWheel={e => e.target.blur()}
+          />
           </div>
-
-          <label className="flex items-center gap-3 bg-gray-900 rounded-lg px-4 py-3 cursor-pointer">
-            <input type="checkbox" checked={form.is_recurring}
-              onChange={e => setForm({...form, is_recurring: e.target.checked})}
-              className="w-4 h-4 accent-purple-600" />
-            <div>
-              <div className="text-white text-sm font-semibold">Evento recurrente</div>
-              <div className="text-gray-500 text-xs">Este evento se repite ocasionalmente</div>
-            </div>
-          </label>
 
           {/* Imágenes */}
           <div className="bg-gray-900 rounded-2xl p-6">

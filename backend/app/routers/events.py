@@ -11,9 +11,26 @@ import shutil
 import uuid
 from fastapi import File, UploadFile
 from pathlib import Path
+from app.models.ticket import Ticket
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+def add_tickets_sold(event, db):
+    from app.models.review import Review
+    event.tickets_sold = db.query(Ticket).filter(Ticket.event_id == event.id).count()
+    
+    # rating promedio del organizador
+    from app.models.event import Event as EventModel
+    org_events = db.query(EventModel).filter(EventModel.organizer_id == event.organizer_id).all()
+    total_rating = 0
+    total_reviews = 0
+    for e in org_events:
+        reviews = db.query(Review).filter(Review.event_id == e.id).all()
+        total_rating += sum(r.rating for r in reviews)
+        total_reviews += len(reviews)
+    event.organizer_rating = round(total_rating / total_reviews, 1) if total_reviews > 0 else None
+    return event
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
@@ -28,20 +45,22 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 @router.get("/", response_model=list[EventResponse])
 def get_events(db: Session = Depends(get_db)):
-    return db.query(Event).all()
+    events = db.query(Event).all()
+    return [add_tickets_sold(e, db) for e in events]
 
 @router.get("/my-events", response_model=list[EventResponse])
 def get_my_events(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if not current_user.is_organizer:
         raise HTTPException(status_code=403, detail="Solo organizadores")
-    return db.query(Event).filter(Event.organizer_id == current_user.id).all()
+    events = db.query(Event).filter(Event.organizer_id == current_user.id).all()
+    return [add_tickets_sold(e, db) for e in events]
 
 @router.get("/{event_id}", response_model=EventResponse)
 def get_event(event_id: int, db: Session = Depends(get_db)):
     event = db.query(Event).filter(Event.id == event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
-    return event
+    return add_tickets_sold(event, db)
 
 @router.post("/", response_model=EventResponse)
 def create_event(event: EventCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

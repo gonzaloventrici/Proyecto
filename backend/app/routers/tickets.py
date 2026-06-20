@@ -14,6 +14,11 @@ def create_ticket(ticket: TicketCreate, db: Session = Depends(get_db), current_u
     event = db.query(Event).filter(Event.id == ticket.event_id).first()
     if not event:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
+
+    tickets_sold = db.query(Ticket).filter(Ticket.event_id == ticket.event_id).count()
+    if tickets_sold >= event.capacity:
+        raise HTTPException(status_code=400, detail="Evento agotado")
+
     new_ticket = Ticket(
         user_id=current_user.id,
         event_id=ticket.event_id,
