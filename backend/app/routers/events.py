@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from app.database.connection import get_db
 from app.models.event import Event
@@ -7,14 +7,17 @@ from app.schemas.event import EventCreate, EventResponse
 from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
 import os
-import shutil
-import uuid
-from fastapi import File, UploadFile
-from pathlib import Path
+import requests  # Importamos requests para conectar con Cloudinary
 from app.models.ticket import Ticket
+from app.models.event_image import EventImage
+from app.schemas.event_image import EventImageResponse
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+
+# CONFIGURACIÓN DE CLOUDINARY
+CLOUDINARY_CLOUD_NAME = "dji2bw4ph"
+CLOUDINARY_PRESET = "wharty"
 
 def add_tickets_sold(event, db):
     from app.models.review import Review
@@ -96,8 +99,8 @@ def update_event(event_id: int, data: EventCreate, db: Session = Depends(get_db)
     db.refresh(event)
     return event
 
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
+
+# --- ENDPOINTS MODIFICADOS PARA CLOUDINARY ---
 
 @router.post("/{event_id}/upload-image")
 def upload_image(event_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -107,24 +110,30 @@ def upload_image(event_id: int, file: UploadFile = File(...), db: Session = Depe
     if event.organizer_id != current_user.id:
         raise HTTPException(status_code=403, detail="No tenés permiso")
     
-    ext = file.filename.split('.')[-1]
-    filename = f"{uuid.uuid4()}.{ext}"
-    filepath = UPLOAD_DIR / filename
+    cloudinary_url = f"https://api.cloudinary.com/v1_1/{CLOUDINARY_CLOUD_NAME}/image/upload"
+    try:
+        files = {"file": (file.filename, file.file, file.content_type)}
+        data = {"upload_preset": CLOUDINARY_PRESET}
+        response = requests.post(cloudinary_url, files=files, data=data)
+        response_data = response.json()
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail=f"Error Cloudinary: {response_data.get('error', {}).get('message')}")
+        
+        uploaded_url = response_data.get("secure_url")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de conexión: {str(e)}")
     
-    with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    
-    event.image_url = f"/uploads/{filename}"
+    event.image_url = uploaded_url
     db.commit()
     db.refresh(event)
     return {"image_url": event.image_url}
 
-from app.models.event_image import EventImage
-from app.schemas.event_image import EventImageResponse
 
 @router.get("/{event_id}/images", response_model=list[EventImageResponse])
 def get_event_images(event_id: int, db: Session = Depends(get_db)):
     return db.query(EventImage).filter(EventImage.event_id == event_id).all()
+
 
 @router.post("/{event_id}/images", response_model=EventImageResponse)
 def upload_event_image(event_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -134,22 +143,31 @@ def upload_event_image(event_id: int, file: UploadFile = File(...), db: Session 
     if event.organizer_id != current_user.id:
         raise HTTPException(status_code=403, detail="No tenés permiso")
 
-    ext = file.filename.split('.')[-1]
-    filename = f"{uuid.uuid4()}.{ext}"
-    filepath = UPLOAD_DIR / filename
-    with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    cloudinary_url = f"https://api.cloudinary.com/v1_1/{CLOUDINARY_CLOUD_NAME}/image/upload"
+    try:
+        files = {"file": (file.filename, file.file, file.content_type)}
+        data = {"upload_preset": CLOUDINARY_PRESET}
+        response = requests.post(cloudinary_url, files=files, data=data)
+        response_data = response.json()
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail=f"Error Cloudinary: {response_data.get('error', {}).get('message')}")
+        
+        uploaded_url = response_data.get("secure_url")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de conexión: {str(e)}")
 
     has_primary = db.query(EventImage).filter(EventImage.event_id == event_id, EventImage.is_primary == True).first()
     new_image = EventImage(
         event_id=event_id,
-        url=f"/uploads/{filename}",
+        url=uploaded_url,
         is_primary=not has_primary
     )
     db.add(new_image)
     db.commit()
     db.refresh(new_image)
     return new_image
+
 
 @router.put("/{event_id}/images/{image_id}/set-primary")
 def set_primary_image(event_id: int, image_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -161,6 +179,7 @@ def set_primary_image(event_id: int, image_id: int, db: Session = Depends(get_db
     db.commit()
     return {"message": "Imagen principal actualizada"}
 
+
 @router.delete("/{event_id}/images/{image_id}")
 def delete_event_image(event_id: int, image_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     event = db.query(Event).filter(Event.id == event_id).first()
@@ -169,12 +188,7 @@ def delete_event_image(event_id: int, image_id: int, db: Session = Depends(get_d
     image = db.query(EventImage).filter(EventImage.id == image_id).first()
     if not image:
         raise HTTPException(status_code=404, detail="Imagen no encontrada")
-    import os
-    if image.url.startswith('/uploads/'):
-        try:
-            os.remove(image.url[1:])
-        except:
-            pass
+    
     db.delete(image)
     db.commit()
     return {"message": "Imagen eliminada"}

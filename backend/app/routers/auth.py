@@ -9,8 +9,13 @@ from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta
 import os
+import requests  # Importamos requests para conectar con Cloudinary
 
 router = APIRouter()
+
+# CONFIGURACIÓN DE CLOUDINARY
+CLOUDINARY_CLOUD_NAME = "dji2bw4ph"
+CLOUDINARY_PRESET = "wharty"
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -77,19 +82,31 @@ def update_me(data: dict, current_user: User = Depends(get_current_user), db: Se
     db.refresh(current_user)
     return current_user
 
+
+# --- ENDPOINT MODIFICADO PARA CLOUDINARY ---
+
 @router.post("/me/avatar")
 def upload_avatar(file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    import cloudinary
-    import cloudinary.uploader
+    cloudinary_url = f"https://api.cloudinary.com/v1_1/{CLOUDINARY_CLOUD_NAME}/image/upload"
+    
+    try:
+        files = {"file": (file.filename, file.file, file.content_type)}
+        data = {
+            "upload_preset": CLOUDINARY_PRESET,
+            "folder": "wharty/avatars"
+        }
+        
+        response = requests.post(cloudinary_url, files=files, data=data)
+        response_data = response.json()
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail=f"Error Cloudinary: {response_data.get('error', {}).get('message')}")
+        
+        uploaded_url = response_data.get("secure_url")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error de conexión: {str(e)}")
 
-    cloudinary.config(
-        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
-        api_key=os.getenv("CLOUDINARY_API_KEY"),
-        api_secret=os.getenv("CLOUDINARY_API_SECRET")
-    )
-
-    result = cloudinary.uploader.upload(file.file, folder="wharty/avatars")
-    current_user.avatar_url = result["secure_url"]
+    current_user.avatar_url = uploaded_url
     db.commit()
     db.refresh(current_user)
     return {"avatar_url": current_user.avatar_url}
@@ -137,19 +154,6 @@ def get_organizer_profile(user_id: int, db: Session = Depends(get_db)):
 
 @router.delete("/me/avatar")
 def delete_avatar(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    import cloudinary
-    import cloudinary.uploader
-
-    cloudinary.config(
-        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
-        api_key=os.getenv("CLOUDINARY_API_KEY"),
-        api_secret=os.getenv("CLOUDINARY_API_SECRET")
-    )
-
-    if current_user.avatar_url and "cloudinary" in current_user.avatar_url:
-        public_id = current_user.avatar_url.split("/")[-1].split(".")[0]
-        cloudinary.uploader.destroy(f"wharty/avatars/{public_id}")
-
     current_user.avatar_url = None
     db.commit()
     return {"message": "Foto eliminada"}

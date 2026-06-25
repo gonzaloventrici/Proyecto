@@ -4,11 +4,10 @@ from app.database.connection import get_db
 from app.models.review import Review
 from app.models.ticket import Ticket
 from app.models.event import Event
-from app.models.user import User
+from app.models.user import User  # <-- Import único y limpio
 from app.schemas.review import ReviewCreate, ReviewResponse
 from app.routers.events import get_current_user
-from datetime import datetime, timezone
-from app.models.user import User
+from datetime import datetime
 
 router = APIRouter()
 
@@ -23,7 +22,9 @@ def create_review(review: ReviewCreate, db: Session = Depends(get_db), current_u
     if not event:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
 
-    # Verificar que el evento ya ocurrió
+    # [CORRECCIÓN] Comparación segura de fechas:
+    # Si event.date es "naive" (sin zona horaria), usamos datetime.now()
+    # Si llega a tener zona horaria en la DB, recordá usar datetime.now(timezone.utc)
     if event.date > datetime.now():
         raise HTTPException(status_code=403, detail="Solo podés reseñar eventos que ya ocurrieron")
 

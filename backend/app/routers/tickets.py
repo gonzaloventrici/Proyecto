@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database.connection import get_db
 from app.models.ticket import Ticket
 from app.models.event import Event
-from app.models.user import User
+from app.models.user import User  # <-- Importado acá de forma única
 from app.schemas.ticket import TicketCreate, TicketResponse
 from app.routers.events import get_current_user
 
@@ -15,6 +15,7 @@ def create_ticket(ticket: TicketCreate, db: Session = Depends(get_db), current_u
     if not event:
         raise HTTPException(status_code=404, detail="Evento no encontrado")
 
+    # Validación de capacidad
     tickets_sold = db.query(Ticket).filter(Ticket.event_id == ticket.event_id).count()
     if tickets_sold >= event.capacity:
         raise HTTPException(status_code=400, detail="Evento agotado")
