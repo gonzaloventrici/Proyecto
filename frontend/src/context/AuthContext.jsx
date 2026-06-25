@@ -24,7 +24,7 @@ const login = async (token) => {
   const payload = parseToken(token)
   setUser(payload)
   try {
-    const res = await fetch('${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/auth/me', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/auth/me`, {
       headers: { Authorization: `Bearer ${token}` }
     })
     const data = await res.json()
