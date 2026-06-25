@@ -1,4 +1,4 @@
-import { getImageUrl } from '../api';
+import { getImageUrl } from "../services/api";
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -73,7 +73,7 @@ export default function MyEvents() {
                 <div className="flex gap-4 items-center">
                   <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-800 flex items-center justify-center flex-shrink-0">
                     {event.image_url ? (
-                      <img src={event.image_url.startsWith('http') ? event.image_url : {getImageUrl(event.image_url)}} alt={event.title} className="w-full h-full object-cover" />
+                      <img src={event.image_url.startsWith('http') ? event.image_url : getImageUrl(event.image_url)} alt={event.title} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-2xl">🎉</span>
                     )}

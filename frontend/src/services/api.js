@@ -28,3 +28,4 @@ export const getImageUrl = (imagePath) => {
   
   return `${baseUrl}${cleanPath}`;
 };
+export default api;

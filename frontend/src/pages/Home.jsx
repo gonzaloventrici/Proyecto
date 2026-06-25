@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import SideMenu from '../components/SideMenu'
 import api from '../services/api'
-// 1. Importamos la función utilitaria
-import { getImageUrl } from '../utils/image'
+import { getImageUrl } from "../services/api";
 
 const LOCATIONS = {
   'Buenos Aires (CABA)': {

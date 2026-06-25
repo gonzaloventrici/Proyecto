@@ -1,4 +1,4 @@
-import { getImageUrl } from '../api';
+import { getImageUrl } from "../services/api";
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'

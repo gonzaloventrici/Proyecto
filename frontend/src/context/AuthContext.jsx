@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 // Importamos la función utilitaria (ajusta la ruta según donde la hayas guardado)
-import { getImageUrl } from '../utils/image' 
+import { getImageUrl } from "../services/api"; 
 
 const AuthContext = createContext()
 

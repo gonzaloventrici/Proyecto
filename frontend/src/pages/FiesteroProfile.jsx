@@ -5,7 +5,7 @@ import SideMenu from '../components/SideMenu'
 import api from '../services/api'
 import BackButton from '../components/BackButton'
 // 1. Importamos la función (ajusta la ruta según tu estructura)
-import { getImageUrl } from '../utils/image'
+import { getImageUrl } from "../services/api";
 
 export default function FiesteroProfile() {
   const { user } = useAuth()
