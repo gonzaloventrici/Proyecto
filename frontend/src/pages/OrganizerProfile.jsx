@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import SideMenu from '../components/SideMenu'
 import api from '../services/api'
 import BackButton from '../components/BackButton'
+// 1. Importamos la función utilitaria
+import { getImageUrl } from '../utils/image'
 
 export default function OrganizerProfile() {
   const { id } = useParams()
@@ -64,7 +66,8 @@ export default function OrganizerProfile() {
           <div style={{position:'relative', width:'80px', height:'80px', flexShrink:0}}>
             <div style={{width:'80px', height:'80px', borderRadius:'50%', background:'#7c3aed', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'28px', fontWeight:'bold', color:'white', overflow:'hidden'}}>
               {organizer.avatar_url ? (
-                <img src={`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}${organizer.avatar_url}`} alt="avatar" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                /* 2. Reemplazamos la url del avatar por el helper */
+                <img src={getImageUrl(organizer.avatar_url)} alt="avatar" style={{width:'100%', height:'100%', objectFit:'cover'}} />
               ) : (
                 (organizer.producer_name?.[0] || 'O').toUpperCase()
               )}
@@ -207,12 +210,12 @@ export default function OrganizerProfile() {
                     <div className="flex items-center gap-2">
                       <span className="text-yellow-400">{'⭐'.repeat(Math.round(r.rating))}</span>
                       {r.user_name && (
-                      <span
-                        className="text-gray-500 text-base hover:text-purple-400 transition cursor-pointer"
-                        onClick={e => { e.stopPropagation(); navigate(`/user/${r.user_id}`) }}>
-                        {' - '} {r.user_name}
-                      </span>
-                    )}
+                        <span
+                          className="text-gray-500 text-base hover:text-purple-400 transition cursor-pointer"
+                          onClick={e => { e.stopPropagation(); navigate(`/user/${r.user_id}`) }}>
+                          {' - '} {r.user_name}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <span className="text-gray-500 text-xs">{new Date(r.created_at).toLocaleDateString('es-AR')}</span>
@@ -252,7 +255,8 @@ export default function OrganizerProfile() {
                   className="bg-gray-900 rounded-2xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-500 transition">
                   <div className="h-36 bg-gray-800 overflow-hidden flex items-center justify-center">
                     {eventImages[event.id] ? (
-                      <img src={`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}${eventImages[event.id]}`} alt={event.title} className="w-full h-full object-cover" />
+                      /* 3. Reemplazamos la url de la portada del evento por el helper */
+                      <img src={getImageUrl(eventImages[event.id])} alt={event.title} className="w-full h-full object-cover" />
                     ) : (
                       <span className="text-3xl text-gray-600">📷</span>
                     )}
@@ -273,7 +277,7 @@ export default function OrganizerProfile() {
 
       </div>
       {showDeleteConfirm && (
-        <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:60}}>
+        <div style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', display:'flex', alignItems:'center', justifycontent:'center', zIndex:60}}>
           <div style={{background:'#111827', borderRadius:'16px', padding:'32px', maxWidth:'340px', width:'100%', margin:'0 16px'}}>
             <h2 style={{color:'white', fontSize:'18px', fontWeight:'bold', marginBottom:'8px'}}>Eliminar foto</h2>
             <p style={{color:'#9ca3af', marginBottom:'24px'}}>¿Seguro que querés eliminar tu foto de perfil?</p>

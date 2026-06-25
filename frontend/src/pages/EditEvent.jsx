@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import SideMenu from '../components/SideMenu'
 import api from '../services/api'
 import BackButton from '../components/BackButton'
+// 1. Importamos la función (ajusta la ruta según tu estructura de carpetas)
+import { getImageUrl } from '../utils/image'
 
 const LOCATIONS = {
   'Buenos Aires (CABA)': {
@@ -137,14 +139,14 @@ export default function EditEvent() {
 
   if (loading) return <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">Cargando...</div>
   if (done) return (
-  <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-    <div className="text-center">
-      <div className="text-5xl mb-4">✅</div>
-      <h2 className="text-2xl font-bold mb-2">Evento actualizado correctamente</h2>
-      <p className="text-gray-400">Redirigiendo a tus eventos...</p>
+    <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-5xl mb-4">✅</div>
+        <h2 className="text-2xl font-bold mb-2">Evento actualizado correctamente</h2>
+        <p className="text-gray-400">Redirigiendo a tus eventos...</p>
+      </div>
     </div>
-  </div>
-)
+  )
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -152,7 +154,7 @@ export default function EditEvent() {
 
       <nav className="bg-gray-900 px-6 py-4 flex justify-between items-center">
         <div className="flex gap-4 items-center">
-          <button onClick={() => setMenuOpen(true)} style={{width:'38px', height:'38px', borderRadius:'8px', background:'transparent', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', gap:'5px', padding:'4px'}}>
+          <button onClick={() => setMenuOpen(true)} style={{width:'38px', height:'38px', borderRadius:'8px', background:'transparent', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', justifyinput: 'center', alignItems:'center', gap:'5px', padding:'4px'}}>
             <span style={{display:'block', width:'22px', height:'2px', background:'#a78bfa', borderRadius:'2px'}}></span>
             <span style={{display:'block', width:'22px', height:'2px', background:'#a78bfa', borderRadius:'2px'}}></span>
             <span style={{display:'block', width:'22px', height:'2px', background:'#a78bfa', borderRadius:'2px'}}></span>
@@ -180,8 +182,9 @@ export default function EditEvent() {
             <div className="grid grid-cols-3 gap-3 mb-4">
               {images.map(img => (
                 <div key={img.id} className="relative rounded-xl overflow-hidden">
+                  {/* 2. Usamos la función getImageUrl aquí */}
                   <img
-                    src={`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}${img.url}`}
+                    src={getImageUrl(img.url)}
                     alt="evento"
                     className="w-full h-24 object-cover"
                   />

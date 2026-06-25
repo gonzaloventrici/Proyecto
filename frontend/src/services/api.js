@@ -12,4 +12,8 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-export default api
+export const getImageUrl = (url) => {
+  if (!url) return null
+  if (url.startsWith('http')) return url
+  return `${import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'}${url}`
+}

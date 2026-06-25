@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import SideMenu from '../components/SideMenu'
 import api from '../services/api'
 import BackButton from '../components/BackButton'
+// 1. Importamos la función (ajusta la ruta según tu estructura)
+import { getImageUrl } from '../utils/image'
 
 export default function FiesteroProfile() {
   const { user } = useAuth()
@@ -65,7 +67,8 @@ export default function FiesteroProfile() {
           <div style={{position:'relative', width:'100px', height:'100px', marginBottom:'12px'}}>
             <div style={{width:'100px', height:'100px', borderRadius:'50%', background:'#7c3aed', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'36px', fontWeight:'bold', color:'white', overflow:'hidden', border:'3px solid #7c3aed'}}>
               {profile.avatar_url ? (
-                <img src={`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}${profile.avatar_url}`} alt="avatar" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                /* 2. Reemplazamos la concatenación manual aquí */
+                <img src={getImageUrl(profile.avatar_url)} alt="avatar" style={{width:'100%', height:'100%', objectFit:'cover'}} />
               ) : (
                 (profile.name?.[0] || 'F').toUpperCase()
               )}

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import SideMenu from '../components/SideMenu'
 import api from '../services/api'
+// 1. Importamos la función utilitaria
+import { getImageUrl } from '../utils/image'
 
 const LOCATIONS = {
   'Buenos Aires (CABA)': {
@@ -76,11 +78,12 @@ function EventCard({ event }) {
     <Link to={`/events/${event.id}`}>
       <div className="bg-gray-900 rounded-2xl overflow-hidden hover:ring-2 hover:ring-purple-500 transition">
         
-        {/* Contenedor de la imagen con 'relative' para posicionar el badge encima */}
+        {/* Contenedor de la imagen */}
         <div className="bg-gray-800 h-40 flex items-center justify-center overflow-hidden relative">
           {primaryImage ? (
+            /* 2. Reemplazamos la lógica de concatenación manual */
             <img
-              src={`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}${primaryImage.url}`}
+              src={getImageUrl(primaryImage.url)}
               alt={event.title}
               className="w-full h-full object-cover"
             />
@@ -88,7 +91,6 @@ function EventCard({ event }) {
             <span className="text-4xl text-gray-600">📷</span>
           )}
 
-          {/* El badge ahora está fuera de p-5 y posicionado sobre la imagen */}
           {showReviewBadge && (
             <div className="absolute top-3 right-3 bg-gray-900/90 backdrop-blur-sm text-purple-400 text-xs px-2.5 py-1 rounded-lg shadow-md border border-purple-500/30">
               ⏳ Tenés {3 - diffDays + 1} día{3 - diffDays + 1 !== 1 ? 's' : ''} para reseñar
@@ -163,17 +165,17 @@ export default function Home() {
   const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
 
   let filteredEvents = events.filter(event => {
-  const eventDate = new Date(event.date)
-  if (eventDate < threeDaysAgo) return false // ocultar si pasaron más de 3 días
-  if (search && !event.title.toLowerCase().includes(search.toLowerCase())) return false
-  if (provincia && !event.location.includes(provincia)) return false
-  if (localidad && !event.location.includes(localidad)) return false
-  if (minPrice && parseFloat(minPrice) > 0 && event.price < parseFloat(minPrice)) return false
-  if (maxPrice && parseFloat(maxPrice) > 0 && event.price > parseFloat(maxPrice)) return false
-  if (dateFrom && new Date(event.date) < new Date(dateFrom)) return false
-  if (dateTo && new Date(event.date) > new Date(dateTo + 'T23:59:59')) return false
-  return true
-})
+    const eventDate = new Date(event.date)
+    if (eventDate < threeDaysAgo) return false 
+    if (search && !event.title.toLowerCase().includes(search.toLowerCase())) return false
+    if (provincia && !event.location.includes(provincia)) return false
+    if (localidad && !event.location.includes(localidad)) return false
+    if (minPrice && parseFloat(minPrice) > 0 && event.price < parseFloat(minPrice)) return false
+    if (maxPrice && parseFloat(maxPrice) > 0 && event.price > parseFloat(maxPrice)) return false
+    if (dateFrom && new Date(event.date) < new Date(dateFrom)) return false
+    if (dateTo && new Date(event.date) > new Date(dateTo + 'T23:59:59')) return false
+    return true
+  })
 
   if (sortBy === 'price_asc') filteredEvents = [...filteredEvents].sort((a, b) => a.price - b.price)
   else if (sortBy === 'price_desc') filteredEvents = [...filteredEvents].sort((a, b) => b.price - a.price)
