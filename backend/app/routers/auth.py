@@ -79,16 +79,17 @@ def update_me(data: dict, current_user: User = Depends(get_current_user), db: Se
 
 @router.post("/me/avatar")
 def upload_avatar(file: UploadFile = File(...), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    import shutil, uuid
-    from pathlib import Path
-    UPLOAD_DIR = Path("uploads")
-    UPLOAD_DIR.mkdir(exist_ok=True)
-    ext = file.filename.split('.')[-1]
-    filename = f"avatar_{uuid.uuid4()}.{ext}"
-    filepath = UPLOAD_DIR / filename
-    with open(filepath, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    current_user.avatar_url = f"/uploads/{filename}"
+    import cloudinary
+    import cloudinary.uploader
+
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET")
+    )
+
+    result = cloudinary.uploader.upload(file.file, folder="wharty/avatars")
+    current_user.avatar_url = result["secure_url"]
     db.commit()
     db.refresh(current_user)
     return {"avatar_url": current_user.avatar_url}
@@ -136,12 +137,19 @@ def get_organizer_profile(user_id: int, db: Session = Depends(get_db)):
 
 @router.delete("/me/avatar")
 def delete_avatar(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    import os
-    if current_user.avatar_url and current_user.avatar_url.startswith('/uploads/'):
-        try:
-            os.remove(current_user.avatar_url[1:])
-        except:
-            pass
+    import cloudinary
+    import cloudinary.uploader
+
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET")
+    )
+
+    if current_user.avatar_url and "cloudinary" in current_user.avatar_url:
+        public_id = current_user.avatar_url.split("/")[-1].split(".")[0]
+        cloudinary.uploader.destroy(f"wharty/avatars/{public_id}")
+
     current_user.avatar_url = None
     db.commit()
     return {"message": "Foto eliminada"}
