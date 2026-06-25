@@ -47,7 +47,7 @@ export default function UserProfile() {
         <div className="bg-gray-900 rounded-2xl p-8 mb-8 flex gap-6 items-center">
         <div style={{width:'80px', height:'80px', borderRadius:'50%', background:'#7c3aed', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'28px', fontWeight:'bold', color:'white', overflow:'hidden', flexShrink:0}}>
             {profile.avatar_url ? (
-            <img src={`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}${profile.avatar_url}`} alt="avatar" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+            <img src={{getImageUrl(profile.avatar_url)}} alt="avatar" style={{width:'100%', height:'100%', objectFit:'cover'}} />
             ) : (
             (profile.name?.[0] || 'F').toUpperCase()
             )}

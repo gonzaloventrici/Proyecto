@@ -82,7 +82,7 @@ export default function Profile() {
           <div style={{position:'relative', width:'100px', height:'100px', marginBottom:'12px'}}>
             {profile.avatar_url ? (
               <img
-                src={`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}${profile.avatar_url}`}
+                src={{getImageUrl(profile.avatar_url)}}
                 alt="avatar"
                 style={{width:'100px', height:'100px', borderRadius:'50%', objectFit:'cover', border:'3px solid #7c3aed'}}
               />

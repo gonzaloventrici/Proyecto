@@ -43,7 +43,7 @@ export default function OrganizerEvents() {
           className="bg-gray-900 rounded-2xl overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-500 transition">
           <div className="h-36 bg-gray-800 overflow-hidden flex items-center justify-center">
             {eventImages[event.id] ? (
-              <img src={`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}${eventImages[event.id]}`} alt={event.title} className="w-full h-full object-cover" />
+              <img src={{getImageUrl(eventImages[event.id])}} alt={event.title} className="w-full h-full object-cover" />
             ) : (
               <span className="text-3xl text-gray-600">📷</span>
             )}
